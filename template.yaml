@@ -1,0 +1,126 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  account-sync-service
+  
+  Sample SAM Template for account-sync-service
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 10
+
+Resources:
+#  AccountSyncApi:
+#    Type: AWS::Serverless::Api
+#    Properties:
+#      StageName: Test
+#      Auth:
+#        ApiKeyRequired: true
+#        DefaultAuthorizer: AccountSyncAuthorizer
+#        Authorizers:
+#          MyLambdaTokenAuthorizer:
+#            FunctionArn: !GetAtt MyAuthFunction.Arn
+#  AuthorizationFunction:
+
+  GetMembersFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: get-members/
+      Handler: get-members
+      Runtime: go1.x
+      Tracing: Active # https://docs.aws.amazon.com/lambda/latest/dg/lambda-x-ray.html
+      Role: arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-cbb6aca0
+        SubnetIds:
+          - subnet-0330b74f
+          - subnet-f6d5859e
+      Events:
+        CatchAll:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /members
+            Method: GET
+  PostMembersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: post-members/
+      Handler: post-members
+      Runtime: go1.x
+      Tracing: Active
+      Role: arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-cbb6aca0
+        SubnetIds:
+          - subnet-0330b74f
+          - subnet-f6d5859e
+      Events:
+        CatchAll:
+          Type: Api
+          Properties:
+            Path: /members
+            Method: POST
+  PatchMembersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: patch-members/
+      Handler: patch-members
+      Runtime: go1.x
+      Tracing: Active
+      Role: arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-cbb6aca0
+        SubnetIds:
+          - subnet-0330b74f
+          - subnet-f6d5859e
+      Events:
+        CatchAll:
+          Type: Api
+          Properties:
+            Path: /members/{id}
+            Method: PATCH
+  DeleteMembersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: delete-members/
+      Handler: delete-members
+      Runtime: go1.x
+      Tracing: Active
+      Role: arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-cbb6aca0
+        SubnetIds:
+          - subnet-0330b74f
+          - subnet-f6d5859e
+      Events:
+        CatchAll:
+          Type: Api
+          Properties:
+            Path: /members/{id}
+            Method: DELETE
+
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  AccountSyncAPI:
+    Description: "API Gateway endpoint URL for Prod environment for Account-Sync Function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/members"
+  GetMembersFunction:
+    Description: "Get Members Lambda Function ARN"
+    Value: !GetAtt GetMembersFunction.Arn
+  PostMembersFunction:
+    Description: "Post Members Lambda Function ARN"
+    Value: !GetAtt PostMembersFunction.Arn
+  PatchMembmersFunction:
+    Description: "Patch Members Lambda Function ARN"
+    Value: !GetAtt PatchMembersFunction.Arn
+  DeleteMembersFunction:
+    Description: "Delete Members Lambda Function ARN"
+    Value: !GetAtt DeleteMembersFunction.Arn
